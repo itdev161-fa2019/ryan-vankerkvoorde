@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useHistory } from 'react-router-dom';
-import './styles.css';
+import './styles.css'
 
-const CreatePost = ({ onPostCreated }) => {
+const EditPost = ({ token, post, onPostUpdated }) => {
     let history = useHistory();
-    const [postData, setPostData] = useState({
-        title: '',
-        body: ''
+    const [postData, setPostData] = useState9({
+        title: post.title,
+        body: post.body
     });
     const { title, body } = postData;
 
@@ -20,8 +20,7 @@ const CreatePost = ({ onPostCreated }) => {
         });
     };
 
-
-    const create = async () => {
+    const update = async () => {
         if (!title || !body) {
             console.log('Title and body are required');
         } else {
@@ -33,32 +32,33 @@ const CreatePost = ({ onPostCreated }) => {
             try {
                 const config = {
                     headers: {
-                        'Content-type': 'application/jsom',
-                        body,
-                        config
+                        'Content-Type': 'application/json',
+                        'x-auth-token': token
                     }
                 };
 
                 //Create the post
                 const body = JSON.stringify(newPost);
-                const res = await axios.post(
-                    'http://localhost:5000/api/posts',
+                const res = await axios.put(
+                    `http://localhost:5000/api/posts/${post._id}`,
                     body,
                     config
                 );
 
                 //Call the handler and redirect
-                onPostCreated(res.data);
+                onPostUpdated(res.data);
                 history.push('/');
+
             } catch (error) {
                 console.error(`Error creating post: ${error.response.data}`);
             }
+
         }
-    }
+    };
 
     return (
         <div className="form-container">
-            <h2> Create New Post</h2>
+            <h2>Edit Post</h2>
             <input
                 name="title"
                 type="text"
@@ -71,11 +71,11 @@ const CreatePost = ({ onPostCreated }) => {
                 cols="30"
                 rows="10"
                 value={body}
-                onChange={e => onchange(e)}
+                onChange={e => onChange(e)}
             ></textarea>
-            <button onClick={() => create()}>Submit</button>
+            <button onClick={() => update()}>Submit</button>
         </div>
     );
 };
 
-export default CreatePost;
+export default EditPost;

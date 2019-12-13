@@ -8,7 +8,7 @@ const PostListItem = props => {
     const history = useHistory();
 
     const handleClickPost = post => {
-        const slug = slugify(post.title, { lower: true});
+        const slug = slugify(post.title, { lower: true });
 
         clickPost(post);
         history.push(`/posts/${slug}`);
