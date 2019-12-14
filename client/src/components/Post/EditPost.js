@@ -5,7 +5,7 @@ import './styles.css'
 
 const EditPost = ({ token, post, onPostUpdated }) => {
     let history = useHistory();
-    const [postData, setPostData] = useState9({
+    const [postData, setPostData] = useState({
         title: post.title,
         body: post.body
     });

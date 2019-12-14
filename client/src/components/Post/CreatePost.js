@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useHistory } from 'react-router-dom';
 import './styles.css';
 
-const CreatePost = ({ onPostCreated }) => {
+const CreatePost = ({ token, onPostCreated }) => {
     let history = useHistory();
     const [postData, setPostData] = useState({
         title: '',
@@ -33,9 +33,8 @@ const CreatePost = ({ onPostCreated }) => {
             try {
                 const config = {
                     headers: {
-                        'Content-type': 'application/jsom',
-                        body,
-                        config
+                        'Content-type': 'application/json',
+                        'x-auth-token': token
                     }
                 };
 
@@ -71,7 +70,7 @@ const CreatePost = ({ onPostCreated }) => {
                 cols="30"
                 rows="10"
                 value={body}
-                onChange={e => onchange(e)}
+                onChange={e => onChange(e)}
             ></textarea>
             <button onClick={() => create()}>Submit</button>
         </div>
