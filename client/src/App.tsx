@@ -6,6 +6,9 @@ import Register from './components/Register/Register';
 import Login from './components/Login/Login';
 import PostList from './components/PostList/PostList';
 import Post from './components/Post/Post';
+import CreatePost from './components/Post/CreatePost';
+import EditPost from './components/Post/EditPost';
+
 
 class App extends React.Component {
   state = {
@@ -13,7 +16,7 @@ class App extends React.Component {
     post: null,
     token: null,
     user: null
-  }
+  };
 
   componentDidMount() {
     this.authenticateUser();
@@ -33,14 +36,17 @@ class App extends React.Component {
           'x-auth-token': token
         }
       }
-      axios.get('http://localhost:5000/api/auth', config)
-        .then((response) => {
+      axios
+        .get('http://localhost:5000/api/auth', config)
+        .then(response => {
           localStorage.setItem('user', response.data.name)
           this.setState(
-            { user: response.data.name,
-              token: token },
-              () => {
-                this.loadData();
+            {
+              user: response.data.name,
+              token: token
+            },
+            () => {
+              this.loadData();
             }
           );
         })
@@ -48,9 +54,9 @@ class App extends React.Component {
           localStorage.removeItem('user');
           this.setState({ user: null });
           console.error(`Error logging in: ${error}`);
-        })
+        });
     }
-  }
+  };
 
   logOut = () => {
     localStorage.removeItem('token');
@@ -59,7 +65,7 @@ class App extends React.Component {
   }
 
   loadData = () => {
-    const { token} = this.state;
+    const { token } = this.state;
 
     if (token) {
       const config = {
@@ -68,15 +74,15 @@ class App extends React.Component {
         }
       };
       axios
-      .get('http://localhost:5000/api/posts' , config)
-      .then((response) => {
-        this.setState({
-          posts: response.data
+        .get('http://localhost:5000/api/posts', config)
+        .then((response) => {
+          this.setState({
+            posts: response.data
+          })
         })
-      })
-      .catch((error) => {
-        console.error(`Error fetching data: ${error}`);
-      });
+        .catch((error) => {
+          console.error(`Error fetching data: ${error}`);
+        });
     }
   }
 
@@ -90,7 +96,7 @@ class App extends React.Component {
   deletePost = post => {
     const { token } = this.state;
 
-    if(token) {
+    if (token) {
       const config = {
         headers: {
           'x-auth-token': token
@@ -111,8 +117,34 @@ class App extends React.Component {
     }
   };
 
+  editPost = post => {
+    this.setState({
+      post: post
+    });
+  };
+
+  onPostCreated = post => {
+    const newPosts = [...this.state.posts, post];
+
+    this.setState({
+      posts: newPosts
+    });
+  };
+
+  onPostUpdated = post => {
+    console.log('updated post: ', post);
+    const newPosts = [...this.state.posts];
+    const index = newPosts.findIndex(p => p._id === post._id);
+
+    newPosts[index] = post;
+
+    this.setState({
+      posts: newPosts
+    });
+  };
+
   render() {
-    let { user, posts, post } = this.state;
+    let { user, posts, post, token } = this.state;
     const authProps = {
       authenticateUser: this.authenticateUser
     }
@@ -128,14 +160,23 @@ class App extends React.Component {
               </li>
 
               <li>
-                <Link to="/register">Register</Link>
+                {user ? (
+                  <Link to="/new-post">New Post</Link>
+                ) : (
+                    <Link to="/register">Register</Link>
+                  )}
               </li>
 
               <li>
-                {user ?
-                  <Link to="" onClick={this.logOut}>Log out</Link> :
-                  <Link to="/login">Log in</Link>
-                }
+                {user ? (
+                  <Link to="" onClick={this.logOut}>
+                    Log out
+                  </Link>
+                ) : (
+                    <Link to="/login">
+                      Login
+                  </Link>
+                  )}
               </li>
             </ul>
           </header>
@@ -146,20 +187,32 @@ class App extends React.Component {
                 {user ? (
                   <React.Fragment>
                     <div>Hello {user}!</div>
-                    <PostList 
-                    posts={posts} 
-                    clickPost={this.viewPost} 
-                    deletePost={this.deletePost}
+                    <PostList
+                      posts={posts}
+                      clickPost={this.viewPost}
+                      deletePost={this.deletePost}
+                      editPost={this.editPost}
                     />
-                  </React.Fragment> 
-                ) : (
-                  <React.Fragment>
-                    Please Register or Login
                   </React.Fragment>
-                )}
+                ) : (
+                    <React.Fragment>
+                      Please Register or Login
+                  </React.Fragment>
+                  )}
               </Route>
               <Route path="/posts/:postId">
                 <Post post={post} />
+              </Route>
+              <Route path="/new-post">
+                <CreatePost token={token} onPostCreated={this.onPostCreated} />
+              </Route>
+
+              <Route path="/edit-post/:postId">
+                <EditPost
+                  token={token}
+                  post={post}
+                  onPostUpdated={this.onPostUpdated}
+                />
               </Route>
               <Route
                 exact path="/register"
